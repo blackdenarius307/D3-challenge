@@ -11,11 +11,11 @@ var margin = {
 
 var width = svgWidth - margin.left - margin.right;
 var height = svgHeight - margin.top - margin.bottom;
-
+console.log(margin);
 // Create an SVG wrapper, append an SVG group that will hold our chart,
 // and shift the latter by left and top margins.
 var svg = d3
-  .select(".scatter")
+  .select("#scatter")
   .append("svg")
   .attr("width", svgWidth)
   .attr("height", svgHeight);
@@ -26,7 +26,7 @@ var chartGroup = svg.append("g")
 
 // Initial Params
 var chosenXAxis = "income";
-var chosenYaxis = "healthcare";
+var chosenYAxis = "healthcare";
 
 // function used for updating x-scale var upon click on axis label
 function xScale(data, chosenXAxis) {
@@ -87,7 +87,7 @@ function renderCircles(circlesGroup, newXScale, chosenXAxis, newYScale, chosenYA
 }
 
 // function used for updating circles group with new tooltip
-function updateToolTip(chosenXAxis, chosenYaxis, circlesGroup) {
+function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
   //Define labels
   var xlabel;
@@ -102,7 +102,7 @@ function updateToolTip(chosenXAxis, chosenYaxis, circlesGroup) {
   }
   
   //Set y axis label according to choice
-  if (chosenyAxis === "healthcare") {
+  if (chosenYAxis === "healthcare") {
     ylabel = "Healthcare";
   }
   else {
@@ -130,8 +130,9 @@ function updateToolTip(chosenXAxis, chosenYaxis, circlesGroup) {
 }
 
 // Retrieve data from the CSV file and execute everything below
-d3.csv("data.csv").then(function(data, err) {
+d3.csv("/assets/data/data.csv").then(function(data, err) {
   if (err) throw err;
+  
 
   // parse data
   data.forEach(function(data) {
@@ -158,7 +159,9 @@ d3.csv("data.csv").then(function(data, err) {
     .call(bottomAxis);
 
   // append y axis
-  chartGroup.append("g")
+  var yAxis = chartGroup.append("g")
+    .classed("y-axis", true)
+    .attr("transform", `translate(0, ${width})`)
     .call(leftAxis);
 
   // append initial circles
@@ -167,23 +170,23 @@ d3.csv("data.csv").then(function(data, err) {
     .enter()
     .append("circle")
     .attr("cx", d => xLinearScale(d[chosenXAxis]))
-    .attr("cy", d => yLinearScale(d.healthcare))
+    .attr("cy", d => yLinearScale(d[chosenYAxis]))
     .attr("r", 20)
     .attr("fill", "pink")
     .attr("opacity", ".5");
 
   // Create group for two x-axis labels
-  var labelsGroup = chartGroup.append("g")
+  var labelsXGroup = chartGroup.append("g")
     .attr("transform", `translate(${width / 2}, ${height + 20})`);
 
-  var incomeLabel = labelsGroup.append("text")
+  var incomeLabel = labelsXGroup.append("text")
     .attr("x", 0)
     .attr("y", 20)
     .attr("value", "income") // value to grab for event listener
     .classed("active", true)
     .text("Income");
 
-  var povertyLabel = labelsGroup.append("text")
+  var povertyLabel = labelsXGroup.append("text")
     .attr("x", 0)
     .attr("y", 40)
     .attr("value", "poverty") // value to grab for event listener
@@ -192,18 +195,18 @@ d3.csv("data.csv").then(function(data, err) {
 
   // append y axis
   var labelsYGroup = chartGroup.append("g")
-  .attr("transform", `translate(${width / 2}, ${height + 20})`);
+  .attr("transform", `translate(${height / 2}, ${width + 20})`);
   
   var healthcareLabel = labelsYGroup.append("text")
-  .attr("x", 0)
-  .attr("y", 20)
+  .attr("x", 20)
+  .attr("y", 0)
   .attr("value", "healthcare") // value to grab for event listener
   .classed("active", true)
   .text("Healthcare");
   
   var obesityLabel = labelsYGroup.append("text")
-  .attr("x", 0)
-  .attr("y", 20)
+  .attr("x", 40)
+  .attr("y", 0)
   .attr("value", "obesity") // value to grab for event listener
   .classed("inactive", true)
   .text("Obesity");
@@ -211,19 +214,19 @@ d3.csv("data.csv").then(function(data, err) {
   
   
   
-  chartGroup.append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("y", 0 - margin.left)
-    .attr("x", 0 - (height / 2))
-    .attr("dy", "1em")
-    .classed("axis-text", true)
-    .text("Number of Billboard 500 Hits");
+  // chartGroup.append("text")
+  //   .attr("transform", "rotate(-90)")
+  //   .attr("y", 0 - margin.left)
+  //   .attr("x", 0 - (height / 2))
+  //   .attr("dy", "1em")
+  //   .classed("axis-text", true)
+  //   .text("Number of Billboard 500 Hits");
 
   // updateToolTip function above csv import
-  var circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+  var circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
 
   // x axis labels event listener
-  labelsGroup.selectAll("text")
+  labelsXGroup.selectAll("text")
     .on("click", function() {
       // get value of selection
       var value = d3.select(this).attr("value");
@@ -266,6 +269,8 @@ d3.csv("data.csv").then(function(data, err) {
         }
       }
       // Do the same thing but for Y-axis
+    labelsYGroup.selectAll("text")
+      .on("click", function() {
       if (value !== chosenYAxis) {
 
         // replaces chosenXAxis with value
