@@ -265,6 +265,45 @@ d3.csv("data.csv").then(function(data, err) {
             .classed("inactive", false);
         }
       }
+      // Do the same thing but for Y-axis
+      if (value !== chosenYAxis) {
+
+        // replaces chosenXAxis with value
+        chosenYAxis = value;
+
+        // console.log(chosenXAxis)
+
+        // functions here found above csv import
+        // updates x scale for new data
+        yLinearScale = xScale(data, chosenYAxis);
+
+        // updates x axis with transition
+        yAxis = renderYAxes(yLinearScale, yAxis);
+
+        // updates circles with new x values
+        circlesGroup = renderCircles(circlesGroup, yLinearScale, chosenYAxis);
+
+        // updates tooltips with new info
+        circlesGroup = updateToolTip(chosenYAxis, circlesGroup);
+
+        // changes classes to change bold text
+        if (chosenYAxis === "healthcare") {
+          obesityLabel
+            .classed("active", true)
+            .classed("inactive", false);
+          healthcareLabel
+            .classed("active", false)
+            .classed("inactive", true);
+        }
+        else {
+          obesityLabel
+            .classed("active", false)
+            .classed("inactive", true);
+          healthcareLabel
+            .classed("active", true)
+            .classed("inactive", false);
+        }
+      }
     });
 }).catch(function(error) {
   console.log(error);
