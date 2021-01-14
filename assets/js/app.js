@@ -48,9 +48,10 @@ function yScale(data, chosenYAxis) {
     .domain([d3.min(data, d => d[chosenYAxis]) * 0.8,
       d3.max(data, d => d[chosenYAxis]) * 1.2
     ])
-    .range([height, 0]);
+    .range([0, height]);
 
   return yLinearScale;
+  
 
 }
 // function used for updating xAxis var upon click on axis label
@@ -68,7 +69,7 @@ function renderXAxes(newXScale, xAxis) {
 function renderYAxes(newYScale, yAxis) {
   var leftAxis = d3.axisLeft(newYScale);
 
-  xAxis.transition()
+  yAxis.transition()
     .duration(1000)
     .call(leftAxis);
 
@@ -93,6 +94,7 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
   //Define labels
   var xlabel;
   var ylabel;
+
 
   //set x axis label according to choice
   if (chosenXAxis === "income") {
@@ -162,7 +164,7 @@ d3.csv("/assets/data/data.csv").then(function(data, err) {
   // append y axis
   var yAxis = chartGroup.append("g")
     .classed("y-axis", true)
-    .attr("transform", `translate(0, ${width})`)
+    // .attr("transform", `translate(0, ${width})`)
     .call(leftAxis);
   console.log(yAxis);
   // append initial circles
@@ -198,7 +200,7 @@ d3.csv("/assets/data/data.csv").then(function(data, err) {
 
   // append y axis
   var labelsYGroup = chartGroup.append("g")
-  .attr("transform", `translate(${height / 2}, ${width + 20})`);
+  .attr("transform", `translate(${margin.left/2}, ${0})`);
   
   var healthcareLabel = labelsYGroup.append("text")
   .attr("transform", "rotate(-90)")
@@ -218,29 +220,30 @@ d3.csv("/assets/data/data.csv").then(function(data, err) {
  
   // updateToolTip function above csv import
   var circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
-
+  var xValue = "income";
+  var yValue = "healthcare";
   // x axis labels event listener
   labelsXGroup.selectAll("text")
     .on("click", function() {
       // get value of selection
-      var value = d3.select(this).attr("value");
-      console.log(value);
-      if (value !== chosenXAxis) {
+      xValue = d3.select(this).attr("value");
+    
+      if (xValue !== chosenXAxis) {
         
         // replaces chosenXAxis with value
-        chosenXAxis = value;
-
+        chosenXAxis = xValue;
+        chosenYAxis = yValue;
         console.log(chosenXAxis)
 
         // functions here found above csv import
         // updates x scale for new data
         xLinearScale = xScale(data, chosenXAxis);
-
+        yLinearScale = xScale(data, chosenYAxis);
         // updates x axis with transition
         xAxis = renderXAxes(xLinearScale, xAxis);
 
         // updates circles with new x values
-        circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
+        circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
 
         // updates tooltips with new info
         circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
@@ -267,22 +270,23 @@ d3.csv("/assets/data/data.csv").then(function(data, err) {
       // Do the same thing but for Y-axis
     labelsYGroup.selectAll("text")
       .on("click", function() {
-      if (value !== chosenYAxis) {
+        yValue = d3.select(this).attr("value");
+        if (yValue !== chosenYAxis) {
 
         // replaces chosenXAxis with value
-        chosenYAxis = value;
-
+        chosenYAxis = yValue;
+        chosenXAxis = xValue;
         // console.log(chosenXAxis)
 
         // functions here found above csv import
         // updates x scale for new data
         yLinearScale = xScale(data, chosenYAxis);
-
+        xLinearScale = xScale(data, chosenXAxis);
         // updates x axis with transition
         yAxis = renderYAxes(yLinearScale, yAxis);
 
         // updates circles with new y values
-        circlesGroup = renderCircles(circlesGroup, yLinearScale, chosenYAxis);
+        circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis, yLinearScale, chosenYAxis);
 
         // updates tooltips with new info
         circlesGroup = updateToolTip(chosenYAxis, circlesGroup);
